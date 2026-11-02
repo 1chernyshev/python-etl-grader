@@ -45,7 +45,7 @@ grader_etl/
     logger_setup.py      лог по дате и очистка старых файлов
     sheets.py            выгрузка в Google Sheets
     notify.py            письмо по SMTP
-tests/                   pytest, 74 теста (5 тестов базы пропускаются без PostgreSQL)
+tests/                   pytest, 75 тестов (5 тестов базы пропускаются без PostgreSQL)
 ```
 
 ## Структура таблицы

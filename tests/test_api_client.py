@@ -116,3 +116,14 @@ def test_split_into_days_accepts_interval_given_with_offset():
     chunks = split_into_days(start, end)
     assert [chunk[0].date() for chunk in chunks] == [date(2026, 5, 30), date(2026, 5, 31)]
     assert all(c[0].tzinfo is None and c[1].tzinfo is None for c in chunks)
+
+
+def test_redact_hides_url_encoded_key(settings):
+    from dataclasses import replace
+    from grader_etl.api_client import _redact
+    special = replace(settings, api_client_key='a+b/c d&e')
+    message = ("HTTPSConnectionPool: Max retries exceeded with url: "
+               "/statistics/?client=Client&client_key=a%2Bb%2Fc+d%26e&start=2026-05-31")
+    redacted = _redact(message, special)
+    assert 'a%2Bb' not in redacted and 'a+b' not in redacted
+    assert 'client_key=***' in redacted and 'client=Client' in redacted

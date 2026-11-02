@@ -1,7 +1,9 @@
 """Клиент API статистики грейдера."""
 import logging
+import re
 import time
 from datetime import datetime, time as dt_time, timedelta
+from urllib.parse import quote, quote_plus
 
 import requests
 
@@ -39,8 +41,18 @@ def split_into_days(start, end):
 
 
 def _redact(text, settings):
-    """Прячет ключ клиента, чтобы он не попал в лог."""
-    return str(text).replace(settings.api_client_key, '***')
+    """Прячет ключ клиента, чтобы он не попал в лог.
+
+    requests пишет в текст ошибки URL с ключом в URL-кодировке, поэтому
+    скрываем и исходный вид, и закодированные варианты, а параметр client_key
+    дополнительно вырезаем целиком.
+    """
+    result = str(text)
+    key = settings.api_client_key
+    for variant in {key, quote(key, safe=''), quote_plus(key)}:
+        if variant:
+            result = result.replace(variant, '***')
+    return re.sub(r"(client_key=)[^&\s'\")]*", r'\1***', result)
 
 
 def fetch_statistics(settings, start, end, retries=3, timeout=120, sleep=time.sleep):
